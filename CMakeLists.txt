@@ -5,26 +5,15 @@ project(yascm)
 find_package(BISON REQUIRED)
 find_package(FLEX REQUIRED)
 
+BISON_TARGET(MyParser yascm_bison.y ${CMAKE_CURRENT_BINARY_DIR}/yascm_bison.tab.c COMPILE_FLAGS -d)
+FLEX_TARGET(MyScanner yascm_flex.l  ${CMAKE_CURRENT_BINARY_DIR}/yascm_flex.lex.c )
+ADD_FLEX_BISON_DEPENDENCY(MyScanner MyParser)
 
+ include_directories(${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
+ add_executable(yascm
+    yascm.c
+    yascm.h
+    ${BISON_MyParser_OUTPUTS}
+    ${FLEX_MyScanner_OUTPUTS}
+ )
 
-add_custom_target(LEXER ALL 
-    COMMAND flex -o ${CMAKE_CURRENT_BINARY_DIR}/yascm_flex.lex.c ${CMAKE_CURRENT_SOURCE_DIR}/yascm_flex.l
-    )
-
-add_custom_target(PARSER ALL
-    COMMAND bison -o ${CMAKE_CURRENT_BINARY_DIR}/yascm_bison.tab.c -d ${CMAKE_CURRENT_SOURCE_DIR}/yascm_bison.y
-    )
-
-set(SOURCE_FILES ${SOURCE_FILES} ${CMAKE_CURRENT_BINARY_DIR}/yascm_flex.lex.c 
-${CMAKE_CURRENT_BINARY_DIR}/yascm_bison.tab.c 
-${CMAKE_CURRENT_SOURCE_DIR}/yascm.c
-${CMAKE_CURRENT_SOURCE_DIR}/yascm.h)
-
-
-add_executable(yasc ${SOURCE_FILES})
-#bison -d yascm_bison.y -o yascm_bison.tab.c
-
-target_include_directories(yasc
-    PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}
-)
